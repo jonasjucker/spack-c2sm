@@ -89,7 +89,7 @@ def main():
 
     if not args.cacheidir:
         args.cacheidir = '~/.spack'
-    config_data['config']['install_tree'] = args.pckgidir + \
+    config_data['config']['install_tree']['root'] = args.pckgidir + \
         '/spack-install/' + args.machine.replace('admin-', '')
     config_data['config']['source_cache'] = args.cacheidir + \
         '/' + args.machine.replace('admin-', '') + '/source_cache'
