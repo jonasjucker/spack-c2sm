@@ -8,8 +8,8 @@ import subprocess
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-spack_version='v0.15.4'
-spack_repo='git@github.com:spack/spack.git'
+spack_version='v0.15.4_debug'
+spack_repo='git@github.com:lxavier/spack.git'
 
 def main():
     parser=argparse.ArgumentParser(description='Small config script which can be used to install a spack instance with the correct configuration files and mch spack packages.')
