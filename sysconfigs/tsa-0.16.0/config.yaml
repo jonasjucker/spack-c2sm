@@ -1,0 +1,16 @@
+config:
+  build_jobs: 6
+  build_stage:
+  - $SCRATCH/spack-stages/tsa-0.16.0
+  db_lock_timeout: 10
+  extensions:
+  - /scratch-shared/meteoswiss/scratch/egermann/spack-mch/tools/spack-scripting
+  install_tree:
+    projections:
+      all: '{name}/{version}/{compiler.name}/{hash}'
+    root: $SCRATCH/spack-install/tsa-0.16.0
+  module_roots:
+    tcl: $SCRATCH/modules/tsa-0.16.0
+  source_cache: ~/.spack/source_cache
+  template_dirs:
+  - $spack/templates
