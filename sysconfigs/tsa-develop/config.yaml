@@ -6,7 +6,7 @@ config:
   install_tree:
     root:
     projections:
-      all: '{name}/{version}/{compiler.name}/{hash}' 
+      all: '{name}/{version}/{compiler.name}/{hash}'
   module_roots:
     tcl: 
   source_cache:
