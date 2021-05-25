@@ -1,0 +1,15 @@
+config:
+  build_jobs: 6
+  build_stage:
+  db_lock_timeout: 20
+  extensions:
+  install_tree:
+    projections:
+      all: '{name}/{version}/{compiler.name}/{hash}'
+    root: 
+  module_roots:
+    tcl: 
+  source_cache:
+  misc_cache:
+  template_dirs:
+  - $spack/templates
