@@ -9,6 +9,7 @@ config:
     root: 
   module_roots:
     tcl: 
-  source_cache: ~/.spack/source_cache    
+  source_cache:
+  misc_cache:
   template_dirs:
   - $spack/templates
