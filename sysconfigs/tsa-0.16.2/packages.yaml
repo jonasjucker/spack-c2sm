@@ -146,6 +146,8 @@ packages:
     version: [master] 
   icon:
     variants: host=tsa
+  icontools:
+    variants: slave=tsa
   llvm:
     externals:
     - spec: llvm@10.0.0 
