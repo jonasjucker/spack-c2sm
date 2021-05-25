@@ -4,9 +4,9 @@ config:
   db_lock_timeout: 20
   extensions:
   install_tree:
+    root:
     projections:
-      all: '{name}/{version}/{compiler.name}/{hash}'
-    root: 
+      all: '{name}/{version}/{compiler.name}/{hash}' 
   module_roots:
     tcl: 
   source_cache:
