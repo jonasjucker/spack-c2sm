@@ -1,5 +1,0 @@
-packages: 
-  hdf5:
-    paths:
-      hdf5@1.10.5%pgi@20.4: /apps/arolla/UES/jenkins/RH7.7/MCH-PE20.08-dev0/pgi/20.4/easybuild/software/HDF5/1.10.5-PGI-20.4-GCC-8.3.0
-        
