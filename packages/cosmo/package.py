@@ -4,11 +4,15 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-import subprocess, re, itertools
+import subprocess, re, itertools, os
 from spack import *
 
 def get_releases(repo):
-        git_obj = subprocess.run(["git","ls-remote","--refs",repo], stdout=subprocess.PIPE)
+    git_obj = subprocess.run(["git","ls-remote","--refs",repo], capture_output=True)
+    if git_obj.returncode != 0:
+        print("\nWarning: no access to {:s} => not fetching versions\n".format(repo))
+        return []
+    else:
         git_tags = [re.match('refs/tags/(.*)', x.decode('utf-8')).group(1) for x in git_obj.stdout.split() if re.match('refs/tags/(.*)', x.decode('utf-8'))]
         return git_tags
 
@@ -17,11 +21,12 @@ def set_versions(repo, reg_filter=None):
         return re.match(reg_filter, repo_tag) != None
 
     tags = get_releases(repo)
-    if reg_filter:
-        tags = list(filter(filterfn, tags))
+    if tags:
+        if reg_filter:
+            tags = list(filter(filterfn, tags))
 
-    for tag in tags:
-        version(tag, git=repo, tag=tag, get_full_repo=True)
+        for tag in tags:
+            version(tag, git=repo, tag=tag, get_full_repo=True)
 
 
 class Cosmo(MakefilePackage):
@@ -36,8 +41,9 @@ class Cosmo(MakefilePackage):
 
     version('master', branch='master', get_full_repo=True)
     version('dev-build', branch='master', get_full_repo=True)
-    version('mch', git='git@github.com:MeteoSwiss-APN/cosmo.git', branch='mch', get_full_repo=True)
-    version('c2sm', git='git@github.com:C2SM-RCM/cosmo.git', branch='master', get_full_repo=True)
+    version('mch', git=apngit, branch='mch', get_full_repo=True)
+    version('c2sm-master', git=c2smgit, branch='master', get_full_repo=True)
+    version('c2sm-features', git=c2smgit, branch='c2sm-features', get_full_repo=True)
 
     patch('patches/5.07.mch1.0.p4/patch.Makefile', when='@5.07.mch1.0.p4')
     patch('patches/5.07.mch1.0.p4/patch.Makefile', when='@5.07.mch1.0.p5')
@@ -49,7 +55,7 @@ class Cosmo(MakefilePackage):
     depends_on('netcdf-c +mpi', type=('build', 'link'))
     depends_on('slurm%gcc', type='run')
     depends_on('cuda%gcc', when='cosmo_target=gpu', type=('build', 'link', 'run'))
-    depends_on('serialbox@2.6.0', when='+serialize', type='build')
+    depends_on('serialbox', when='+serialize', type='build')
     depends_on('mpicuda', type=('build', 'link', 'run'), when='cosmo_target=gpu')
     depends_on('mpi', type=('build', 'link', 'run'), when='cosmo_target=cpu')
     depends_on('libgrib1', type='build')
@@ -58,9 +64,10 @@ class Cosmo(MakefilePackage):
     depends_on('cosmo-eccodes-definitions ~aec', type=('build','run'), when='+eccodes')
     depends_on('perl@5.16.3:', type='build')
     depends_on('omni-xmod-pool', when='+claw', type='build')
-    depends_on('claw@2.0.1', when='+claw', type='build')
+    depends_on('claw%gcc', when='+claw', type='build')
     depends_on('boost%gcc', when='cosmo_target=gpu ~cppdycore', type='build')
     depends_on('cmake%gcc', type='build')
+    depends_on('zlib_ng +compat', when='+zlib_ng', type=('link','run'))
 
 
     # cosmo-dycore dependency
@@ -98,9 +105,25 @@ class Cosmo(MakefilePackage):
     variant('set_version', default=False, description='Pass cosmo tag version to Makefile')
     variant('gt1', default=False, description='Build dycore with gridtools 1.1.3')
     variant('cuda_arch', default='none', description='Build with cuda_arch', values=('70', '60', '37'), multi=False)
+    variant('zlib_ng', default=False, description='Run with faster zlib-implemention for compression of NetCDF output')
+
+    variant('slurm_bin', default='srun', description='Slurm binary on CSCS machines')
+    variant('slurm_opt_partition', default='-p', description='Slurm option to specify partition for testing')
+    variant('slurm_partition', default='normal', description='Slurm partition for testing')
+
+    variant('slurm_opt_nodes', default='-n', description='Slurm option to specify number of nodes for testing')
+    variant('slurm_nodes', default='1', description='Pattern to specify number of nodes for testing')
+
+    variant('slurm_opt_account', default='-A', description='Slurm option to specify account for testing')
+    variant('slurm_account', default='g110', description='Slurm option to specify account for testing')
+
+    variant('slurm_opt_constraint', default='-C', description='Slurm option to specify constraints for nodes requested')
+    variant('slurm_constraint', default='gpu', description='Slurm constraints for nodes requested')
 
     conflicts('+claw', when='cosmo_target=cpu')
     conflicts('+pollen', when='@5.05:5.06,master')
+    conflicts('cosmo_target=gpu', when='%gcc')
+
     # previous versions contain a bug affecting serialization
     conflicts('+serialize', when='@5.07.mch1.0.p2:5.07.mch1.0.p3')
     variant('production', default=False, description='Force all variants to be the ones used in production')
@@ -136,7 +159,6 @@ class Cosmo(MakefilePackage):
             grib_prefix = self.spec['cosmo-grib-api'].prefix
             grib_definition_prefix = self.spec['cosmo-grib-api-definitions'].prefix
             env.set('GRIBAPIL', '-L' + grib_prefix + '/lib -lgrib_api_f90 -lgrib_api -L' + self.spec['jasper'].prefix + '/lib64 -ljasper')
-            env.set('GRIBAPII', '-I' + grib_prefix + '/include')
         else:
             grib_prefix = self.spec['eccodes'].prefix
             grib_definition_prefix = self.spec['cosmo-eccodes-definitions'].prefix
@@ -146,7 +168,11 @@ class Cosmo(MakefilePackage):
             else:
                 eccodes_lib_dir='/lib'
             env.set('GRIBAPIL', '-L' + grib_prefix + eccodes_lib_dir + ' -leccodes_f90 -leccodes -L' + self.spec['jasper'].prefix + '/lib64 -ljasper')
+        grib_inc_dir_path = os.path.join(grib_prefix, 'include')
+        if os.path.exists(grib_inc_dir_path):
             env.set('GRIBAPII', '-I' + grib_prefix + '/include')
+        else:
+            env.set('GRIBAPII', '')
 
         # Netcdf library
         if self.spec.variants['slave'].value == 'daint':
@@ -187,13 +213,20 @@ class Cosmo(MakefilePackage):
 
         # Claw library
         if '+claw' in self.spec:
+            claw_flags = ''
+            # Set special flags after CLAW release 2.1
+            if self.compiler.name == 'pgi' and self.spec['claw'].version>=Version(2.1) :
+                claw_flags += ' --fc-vendor=portland --fc-cmd=${FC}'
             if 'cosmo_target=gpu' in self.spec:
-                env.append_flags('CLAWFC_FLAGS', '--directive=openacc -v')
+                claw_flags += ' --directive=openacc'            
+            if self.spec.variants['verbose'].value:
+                claw_flags += ' -v'
             env.set('CLAWDIR', self.spec['claw'].prefix)
             env.set('CLAWFC', self.spec['claw'].prefix + '/bin/clawfc')
             env.set('CLAWXMODSPOOL', self.spec['omni-xmod-pool'].prefix + '/omniXmodPool/')
             if self.mpi_spec.name == 'mpich':
-                env.set('CLAWFC_FLAGS', '-U__CRAYXC')
+                claw_flags += ' -D__CRAYXC'
+            env.set('CLAWFC_FLAGS', claw_flags)
 
         # Linker flags
         if self.compiler.name == 'pgi' and '~cppdycore' in self.spec:
@@ -280,6 +313,6 @@ class Cosmo(MakefilePackage):
     @on_package_attributes(run_tests=True)
     def test(self):
             try:
-                subprocess.run([self.build_directory + '/test/tools/test_cosmo.py', '-s', str(self.spec),'-b', str('.')], stderr=subprocess.STDOUT, check=True)
+                subprocess.run([self.build_directory + '/test/tools/test_cosmo.py', '-s', self.spec.__str__(),'-b', str('.')], stderr=subprocess.STDOUT, check=True)
             except:
                 raise InstallError('Testsuite failed')
