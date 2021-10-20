@@ -40,6 +40,8 @@ def main():
         cmd = 'git clone {repo} -b {branch} {dest_dir}'.format(
             repo=spack_repo, branch=args.version, dest_dir=os.path.join(args.idir, 'spack'))
         subprocess.run(cmd.split(), check=True)
+        hot_fix_cmd = 'git cherry-pick f67d4774ea192810a60a642190a82a3583600569'
+        subprocess.run(hot_fix_cmd.split(), check=True, cwd=os.path.join(args.idir, 'spack'))
         print('Installing custom dev-build command')
         shutil.copy('./tools/spack-scripting/scripting/cmd/dev_build.py',
                     args.idir + '/spack/lib/spack/spack/cmd/')
