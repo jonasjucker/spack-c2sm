@@ -36,7 +36,8 @@ class Icon(Package):
     depends_on('serialbox@2.6.0 ~python ~sdb ~shared', when='serialize_mode=read', type=('build', 'link', 'run'))
     depends_on('serialbox@2.6.0 ~python ~sdb ~shared', when='serialize_mode=perturb', type=('build', 'link', 'run'))
     depends_on('eccodes@2.19.0 +build_shared_libs', when='+eccodes', type=('build', 'link', 'run'))
-    depends_on('claw@2.1%gcc', when='+claw', type=('build', 'link', 'run'))
+    depends_on('claw@2.1%gcc', when='+claw~ham', type=('build', 'link', 'run'))
+    depends_on('claw@2.0.1', when='+claw+ham', type=('build', 'link', 'run'))
 
     variant('icon_target', default='gpu', description='Build with target gpu or cpu', values=('gpu', 'cpu'), multi=False)
     variant('host', default='daint', description='Build on described host (e.g daint)', multi=False, values=('tsa', 'daint'))
