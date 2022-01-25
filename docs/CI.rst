@@ -8,7 +8,7 @@ For example
 
 .. code-block:: bash
 
-  COSMO_SPEC="cosmo@org-master%pgi real_type=float cosmo_target=gpu +cppdycore +claw"
+  COSMO_SPEC="cosmo@master%pgi real_type=float cosmo_target=gpu +cppdycore +claw"
 
 In order to find the location of that build,
 
