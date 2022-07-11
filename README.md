@@ -33,6 +33,7 @@ cd <cosmo_base_dir> # cosmo, not cosmo/cosmo
 spack devbuildcosmo cosmo@dev-build # -t option for test, -c for clean build usually cosmo@dev-build%pgi is enough
 
 ```
+ksksks
 
 ## Automatically source the correct spack instance & python3 when using bash
 
