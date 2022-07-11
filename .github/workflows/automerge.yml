@@ -2,21 +2,17 @@ name: Merge latest Dom config
 on:
   push:
     branches:
-    # We only want to allow automatic merge from protected branch
-    - test
+      - test
 jobs:
-  automerge:
+  merge-branch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
+      - uses: everlytic/branch-merge@1.1.2
         with:
-          ref: ${{ github.head_ref }}
-      - name: Push changes
-        run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-          git commit -am "GitHub Action: Dom automatic upgrade"
-          git push origin master
+          github_token: ${{ github.token }}
+          source_ref: ${{ github.ref }}
+          target_branch: 'master'
+          commit_message_template: '[Automated] Merged {source_ref} into target {target_branch}'
 
 
