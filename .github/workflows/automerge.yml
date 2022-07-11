@@ -8,7 +8,7 @@ jobs:
   automerge:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@dom_automatic_upgrade
+      - uses: actions/checkout@test
         with:
           ref: ${{ github.head_ref }}
       - name: Push changes
@@ -17,6 +17,6 @@ jobs:
           git config --global user.email 'github-actions@github.com'
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git commit -am "GitHub Action: Dom automatic upgrade"
-          git push origin test_master
+          git push origin master
 
 
