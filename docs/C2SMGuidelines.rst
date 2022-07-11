@@ -2,7 +2,7 @@ C2SM Guidelines for Spack
 =========================
 
 Spack enables the users to install pieces of software in a very
-user-friendly way, allowing e.g. different versions or specificatins
+user-friendly way, allowing e.g. different versions or specifications
 of the same package to be installed simultaneously or installing
 without having to "manually" download the source code. This comes at
 the expense of potentially losing control over the exact
@@ -88,8 +88,8 @@ the same location!**
 Installation
 ^^^^^^^^^^^^
 
-Per default, Spack installs software under */$SCRATCH/spack-install*.
-On Piz Daint *$SCRATCH* undergoes regular cleanup with deletion of
+Per default, Spack installs software under ``/$SCRATCH/spack-install``.
+On Piz Daint ``$SCRATCH`` undergoes regular cleanup with deletion of
 files older than 30 days. This may corrupt the internal Spack database
 and lead to unexpected behaviour of Spack.
 

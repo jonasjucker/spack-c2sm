@@ -48,6 +48,19 @@ def setup_parser(subparser):
                            action="store_true",
                            help="Clean dev-build")
 
+    subparser.add_argument(
+        '--dont-restage',
+        action='store_false',
+        dest="restage",
+        help="if a partial install is detected, don’t delete prior state")
+
+    subparser.add_argument(
+        '-u',
+        '--until',
+        dest='until',
+        default=None,
+        help="phase to stop after when installing (only applies to COSMO)")
+
 
 def custom_devbuild(source_path, spec, args):
     package = spack.repo.get(spec)
@@ -65,10 +78,24 @@ def custom_devbuild(source_path, spec, args):
     elif args.things_to_test == 'all':
         args.things_to_test = True
 
+    # Bugfix: somehow args are changed outside of function when changed inside here
+    # Therefore, at second call of this function things_to_test is a list
+    elif isinstance(args.things_to_test, list):
+        if args.things_to_test[0] != 'cosmo':
+            tty.die("unknown entry in devbuildcosmo for argument '--test' ")
+
     else:
         args.things_to_test = False
 
-    kwargs = {'make_jobs': args.jobs, 'tests': args.things_to_test}
+    kwargs = {
+        'make_jobs': args.jobs,
+        'restage': args.restage,
+        'tests': args.things_to_test
+    }
+
+    # for testing purposes we want to split build and install phase for COSMO
+    if package.name == 'cosmo':
+        kwargs['stop_at'] = args.until
 
     package.do_install(verbose=True, **kwargs)
 
@@ -156,16 +183,3 @@ def devbuildcosmo(self, args):
 
     # Dev-build cosmo
     custom_devbuild(source_path, cosmo_spec, args)
-
-    # Serialize data
-    if "+serialize" in cosmo_spec:
-        print("\033[92m" + "==> " + "\033[0m" + "cosmo: Serializing data")
-        try:
-            subprocess.run([
-                source_path + '/cosmo/ACC/test/tools/serialize_cosmo.py',
-                self.spec__str__(), '-b', source_path
-            ],
-                           check=True,
-                           stderr=subprocess.STDOUT)
-        except:
-            tty.die('Serialization failed')

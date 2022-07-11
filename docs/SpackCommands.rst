@@ -12,7 +12,7 @@ Usage (spack find)
   
   spack find <package>@<version>%<compiler> +<variants>
 
-An example output for spack find of a spec could look as follows:
+Example output:
 
 .. code-block:: bash
 
@@ -32,6 +32,57 @@ Options (spack find)
 ^^^^^^^^^^^^^^^^^^^^^
 * \--paths, -p: show paths to package install directories
 * \--variants, -v: show variants in output (can be long)
+
+
+Machine processing (spack find)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+For a raw list of installation folders, use
+
+.. code-block:: bash
+
+  spack find --format "{prefix}" <spec>
+
+Example output:
+
+.. code-block:: bash
+
+  spack find --format "{prefix}" cosmo
+  /project/g110/spack-install/tsa/cosmo/apn_5.09a.mch1.2.p2/pgi/qh4lqyvz73zcm2emfwwhcfue6kkm3xyo
+  /project/g110/spack-install/tsa/cosmo/apn_5.09a.mch1.2.p2/pgi/ssezzpu36dc4j5lc35rkytuieicoptfr
+  /project/g110/spack-install/tsa/cosmo/mch/pgi/4h7b7x62dcpvrctghjv23jrpnkep4ela
+  /project/g110/spack-install/tsa/cosmo/mch/pgi/6ijz5756a65p6wblxbr3enllmpdzcvh5
+  /project/g110/spack-install/tsa/cosmo/5.09a.mch1.2.p1/pgi/us5kk56wraktww7e543cxi4dbud2lalv
+  /project/g110/spack-install/tsa/cosmo/5.09a.mch1.2.p1/pgi/o3jtuao2gwrz7uwyekvxvr7ylltwnt4w
+  /project/g110/spack-install/tsa/cosmo/master/gcc/aejk4rps3es6o5trdwppzew3f2j37kl6
+  /project/g110/spack-install/tsa/cosmo/master/pgi/vkwywww3z52ttmlzzpn4df5jnr5paiw4
+  /project/g110/spack-install/tsa/cosmo/master/gcc/l52ikknglfrfolr462lc4ez6abulmphs
+  /project/g110/spack-install/tsa/cosmo/master/pgi/bbjwypwllbba6nmkvronktzo2vt6k3dw
+  /project/g110/spack-install/tsa/cosmo/master/pgi/gnm6i4pya3lrscgdnvvzgt77bssbfcab
+  /project/g110/spack-install/tsa/cosmo/master/pgi/koaxr3hlillunjtywkh46vcpzgrarnxc
+  /project/g110/spack-install/tsa/cosmo/master/pgi/i72unz2dzlp4donztoi7kxbubj4kfqtw
+  /project/g110/spack-install/tsa/cosmo/master/pgi/rvqs2tqltwlohpkyedzwnjggtwtgu4ly
+  /project/g110/spack-install/tsa/cosmo/master/pgi/i2hc4rhlhhapga6gheq3tcnbyrytadoy
+  /project/g110/spack-install/tsa/cosmo/master/pgi/kmrbrer2mlzz2rkn3ykhxr6h6glbwptn
+
+Tip:
+If you want just any installation folder that matches the spec, the output can be truncated with '| head -n 1' to get the first.
+If you want the installation folder of the spec that matches your spec, filled with the current defaults, you have to use Python.
+
+.. code-block:: python
+
+  #!/usr/bin/env spack python
+  from spack.spec import Spec
+  s = Spec('cosmo')
+  s.concretize()
+  install_dir = s.format('{prefix}')
+  print(install_dir)
+
+or as a one-liner
+
+.. code-block:: bash
+
+  spack python -c "print(spack.spec.Spec('cosmo').concretized().format('{prefix}'))"
+
 
 Spack list
 ----------
@@ -105,8 +156,8 @@ Usage (spack install)
 Options (spack install)
 ^^^^^^^^^^^^^^^^^^^^^^^
 * -v: print output of configuration and compilation for all dependencies to terminal
-* --test=root: run package tests during installation for top-level packages (but skip tests for dependencies)
-* --keep-stage: keep all source needed to build the package
+* \--test=root: run package tests during installation for top-level packages (but skip tests for dependencies)
+* \--keep-stage: keep all source needed to build the package
 
 Spack installcosmo
 ------------------
@@ -132,17 +183,19 @@ Usage (spack installcosmo)
 
 Options (spack installcosmo)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* --test {root,all}: If root is chosen, run COSMO testsuite before installation 
+* \--test {root,all}: If root is chosen, run COSMO testsuite before installation 
                      (but skip tests for dependencies). If all is chosen, 
                      run package tests during installation for all packages.
-* -j --jobs: explicitly set number of parallel jobs
-* --only {package,dependencies}: select the mode of installation.
+* -j \--jobs: Explicitly set number of parallel jobs
+* \--only {package,dependencies}: Select the mode of installation.
                                  the default is to install the package along with all its dependencies.
                                  alternatively one can decide to install only the package or only
                                  the dependencies.
-* --keep-stage: don't remove the build after compilation
-* -v, --verbose: Verbose installation
-* --force_uninstall: Force uninstall if COSMO-package is already installed
+* \--keep-stage: Don't remove the build after compilation
+* -v, \--verbose: Verbose installation
+* \--force_uninstall: Force uninstall if COSMO-package is already installed
+* \--dont-restage: If a partial install is detected, don't delete prior
+* -u, \--until: Phase to stop after when installing
 
 Spack dev-build
 ---------------
@@ -168,8 +221,8 @@ Usage (spack dev-build)
 
 Options (spack dev-build)
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-* --test=root: run package tests during installation for top-level packages (but skip tests for dependencies)
-* --until <stage>: only run installation until certain stage, like *build* or *install*
+* \--test=root: run package tests during installation for top-level packages (but skip tests for dependencies)
+* \--until <stage>: only run installation until certain stage, like *build* or *install*
 
 .. code-block:: bash
 
@@ -200,15 +253,18 @@ Usage (spack devbuildcosmo)
 Options (spack devbuildcosmo)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* --no_specyaml: Ignore *spec.yaml*
+* \--no_specyaml: Ignore *spec.yaml*
 * -c --clean_build: Clean build
-* -j <JOBS>, --jobs <JOBS>: Explicitly set number of parallel jobs
-* --test {root,dycore,all}: If root is chosen, run COSMO testsuite before installation
+* -j <JOBS>, \--jobs <JOBS>: Explicitly set number of parallel jobs
+
+* \--test {root,dycore,all}: If root is chosen, run COSMO testsuite before installation
                             (but skip tests for dependencies). If dycore is chosen,
                             run test for Dycore and COSMO testsuite.
                             If all is chosen,
                             run package tests during installation for all packages.
-* -c, --clean_build: Clean dev-build
+* -c, \--clean_build: Clean dev-build
+* \--dont-restage: If a partial install is detected, don't delete prior
+* -u, \--until: Phase to stop after when installing
 
 Spack location
 --------------
@@ -254,7 +310,7 @@ Replacing *<command>* with *bash* allows to interactively execute programmes in 
 
 Options (spack build-env)
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-* --dump <filename>: dump environment to <filename> to be sourced at some point
+* \--dump <filename>: dump environment to <filename> to be sourced at some point
 
 Spack edit
 ----------
@@ -276,6 +332,7 @@ like `LD_LIBRARY_PATH` as defined in the respective package.
 
 It is recommended to load the corresponding environment prior to any execution of an executable
 compiled by Spack.
+
 Usage (spack load)
 ^^^^^^^^^^^^^^^^^^
 

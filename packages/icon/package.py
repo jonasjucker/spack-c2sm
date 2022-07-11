@@ -34,6 +34,10 @@ class Icon(Package):
             submodules=True)
     version('2.6.x-rc', commit='040de650', submodules=True)
     version('2.0.17', commit='39ed04ad', submodules=True)
+    version('exclaim-master',
+            branch='master',
+            git='git@github.com:C2SM/icon-exclaim.git',
+            submodules=True)
 
     depends_on('cmake%gcc')
     depends_on('libxml2@2.9.8:%gcc', type=('build', 'link', 'run'))
@@ -90,11 +94,17 @@ class Icon(Package):
     variant('ham',
             default=False,
             description='Build with hammoz and atm_phy_echam enabled.')
+    variant('art', default=False, description='Build with art enabled')
     variant('ocean', default=True, description='Build with ocean enabled')
+    variant('dace', default=False, description='Build with DACE enabled')
+    variant('rttov', default=False, description='Build with RTTOV enabled')
+    variant('silent-rules',
+            default=True,
+            description='Build with Make silent rules ON')
 
     conflicts('icon_target=cpu', when='+claw')
     conflicts('icon_target=gpu', when='%intel')
-    conflicts('icon_target=gpu', when='%cce')
+    conflicts('+dace', when='+rttov')
 
     atm_phy_echam_submodels_namelists_dir = 'externals/atm_phy_echam_submodels/namelists'
     config_dir = '.'
@@ -120,6 +130,10 @@ class Icon(Package):
 
         self._config_file_name = _config_file_name
 
+        if '+dace' in self.spec:
+            env.set('ICON_FCFLAGS', '-O2')
+            env.set('ICON_DACE_FCFLAGS', '-O1')
+
         if '~skip-config' in self.spec:
             env.set('XML2_ROOT', self.spec['libxml2'].prefix)
             if self.spec.variants['serialize_mode'].value != 'none':
@@ -143,6 +157,10 @@ class Icon(Package):
             args.append('--enable-serialization=' +
                         self.spec.variants['serialize_mode'].value)
 
+        # Art
+        if '+art' in self.spec:
+            args.append('--enable-art')
+
         # Claw
         if '+claw' in self.spec:
             args.append('--enable-claw')
@@ -150,6 +168,10 @@ class Icon(Package):
         # Eccodes
         if '+eccodes' in self.spec:
             args.append('--enable-grib2')
+
+        # DACE
+        if '+dace' in self.spec:
+            args.append('--enable-dace')
 
         # Ocean
         if '~ocean' in self.spec:
@@ -160,6 +182,14 @@ class Icon(Package):
         # Rte-rrtmgp
         if '~rte-rrtmgp' in self.spec:
             args.append('--disable-rte-rrtmgp')
+
+        # RTTOV
+        if '~rttov' in self.spec:
+            args.append('--disable-rttov')
+
+        # Silent rules
+        if '~silent-rules' in self.spec:
+            args.append('--disable-silent-rules')
 
         return args
 

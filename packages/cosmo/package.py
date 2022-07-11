@@ -16,6 +16,7 @@ class Cosmo(MakefilePackage):
     git = 'git@github.com:COSMO-ORG/cosmo.git'
     apngit = 'git@github.com:MeteoSwiss-APN/cosmo.git'
     c2smgit = 'git@github.com:C2SM-RCM/cosmo.git'
+    empagit = 'git@github.com:C2SM-RCM/cosmo-ghg.git'
     maintainers = ['elsagermann']
 
     version('org-master', branch='master', get_full_repo=True)
@@ -26,6 +27,7 @@ class Cosmo(MakefilePackage):
             git=c2smgit,
             branch='c2sm-features',
             get_full_repo=True)
+    version('empa-ghg', git=empagit, branch='c2sm', get_full_repo=True)
 
     #deprecated
     version('master', branch='master', get_full_repo=True)
@@ -36,6 +38,7 @@ class Cosmo(MakefilePackage):
 
     set_versions(version, apngit, 'apn', regex_filter='.*mch.*')
     set_versions(version, c2smgit, 'c2sm')
+    set_versions(version, empagit, 'empa')
 
     depends_on('netcdf-fortran', type=('build', 'link'))
     depends_on('netcdf-c +mpi', type=('build', 'link'))
@@ -49,7 +52,7 @@ class Cosmo(MakefilePackage):
                when='cosmo_target=gpu')
     depends_on('mpi', type=('build', 'link', 'run'), when='cosmo_target=cpu')
     depends_on('libgrib1', type='build')
-    depends_on('jasper@1.900.1%gcc', type='build')
+    depends_on('jasper@1.900.1%gcc', type=('build', 'link'))
     depends_on('cosmo-grib-api-definitions',
                type=('build', 'run'),
                when='~eccodes')
@@ -190,6 +193,7 @@ class Cosmo(MakefilePackage):
     conflicts('~gt1', when='@5.07a.mch1.0.p1')
     conflicts('~gt1', when='@5.07a.mch1.0.base')
     conflicts('~gt1', when='@5.07.mch1.0.p10')
+    conflicts('+cppdycore', when='%nvhpc cosmo_target=cpu')
     conflicts('+cppdycore', when='%pgi cosmo_target=cpu')
     # - ML - A conflict should be added there if the oasis variant is
     # chosen and the version is neither c2sm-features nor
@@ -244,6 +248,11 @@ class Cosmo(MakefilePackage):
         else:
             env.set('GRIBAPII', '')
 
+        # libaec
+        if 'libaec' in self.spec:
+            env.set('AECL', '-L' + self.spec['libaec'].prefix + '/lib64 -laec')
+            env.set('AECI', '-I' + self.spec['libaec'].prefix + '/include')
+
         # Netcdf library
         if self.spec.variants['slave'].value == 'daint':
             env.set('NETCDFL', '-L$(NETCDF_DIR)/lib -lnetcdff -lnetcdf')
@@ -260,6 +269,12 @@ class Cosmo(MakefilePackage):
         if self.compiler.name == 'gcc':
             env.set('GRIBDWDL',
                     '-L' + self.spec['libgrib1'].prefix + '/lib -lgrib1_gnu')
+        elif self.compiler.name == 'cce':
+            env.set('GRIBDWDL',
+                    '-L' + self.spec['libgrib1'].prefix + '/lib -lgrib1_cray')
+        elif self.compiler.name == 'nvhpc':
+            env.set('GRIBDWDL',
+                    '-L' + self.spec['libgrib1'].prefix + '/lib -lgrib1_pgi')
         else:
             env.set(
                 'GRIBDWDL', '-L' + self.spec['libgrib1'].prefix +
@@ -269,6 +284,15 @@ class Cosmo(MakefilePackage):
         # MPI library
         if self.mpi_spec.name == 'openmpi':
             env.set('MPIL', '-L' + self.mpi_spec.prefix + ' -lmpi_cxx')
+
+        # manually add libs to linker because of broke modules on Piz Daint for nvidia
+        elif self.spec.variants[
+                'slave'].value == 'daint' and self.compiler.name in ('pgi',
+                                                                     'nvhpc'):
+            env.set(
+                'MPIL', '-L' + self.spec['mpi'].prefix +
+                ' -lmpich -lnvcpumath -lnvhpcatm')
+
         env.set('MPII', '-I' + self.mpi_spec.prefix + '/include')
 
         # Dycoregt & Gridtools linrary
@@ -307,8 +331,9 @@ class Cosmo(MakefilePackage):
         if '+claw' in self.spec:
             claw_flags = ''
             # Set special flags after CLAW release 2.1
-            if self.compiler.name == 'pgi' and self.spec[
-                    'claw'].version >= Version(2.1):
+            if self.compiler.name in (
+                    'pgi',
+                    'nvhpc') and self.spec['claw'].version >= Version(2.1):
                 claw_flags += ' --fc-vendor=portland --fc-cmd=${FC}'
             if 'cosmo_target=gpu' in self.spec:
                 claw_flags += ' --directive=openacc'
@@ -336,11 +361,12 @@ class Cosmo(MakefilePackage):
             env.set('MPPIOI', '-I{:s}/build/lib/mct'.format(oasis_prefix))
 
         # Linker flags
-        if self.compiler.name == 'pgi' and '~cppdycore' in self.spec:
+        if self.compiler.name in ('pgi',
+                                  'nvhpc') and '~cppdycore' in self.spec:
             env.set('LFLAGS', '-lstdc++')
 
         # Compiler & linker variables
-        if self.compiler.name == 'pgi':
+        if self.compiler.name in ('pgi', 'nvhpc'):
             env.set('F90', self.mpi_spec.mpifc + ' -D__PGI_FORTRAN__')
             env.set('LD', self.mpi_spec.mpifc + ' -D__PGI_FORTRAN__')
         else:
@@ -384,7 +410,7 @@ class Cosmo(MakefilePackage):
             OptionsFileName = 'Options'
             if self.compiler.name == 'gcc':
                 OptionsFileName += '.gnu'
-            elif self.compiler.name == 'pgi':
+            elif self.compiler.name in ('pgi', 'nvhpc'):
                 OptionsFileName += '.pgi'
             elif self.compiler.name == 'cce':
                 OptionsFileName += '.cray'
@@ -393,13 +419,23 @@ class Cosmo(MakefilePackage):
 
             makefile = FileFilter('Makefile')
             makefile.filter('/Options.*', '/' + OptionsFileName)
-            if '~serialize' in spec:
-                makefile.filter(
-                    'TARGET     :=.*', 'TARGET     := {0}'.format(
-                        'cosmo_' + spec.variants['cosmo_target'].value))
+            if self.spec.version == Version('empa-ghg'):
+                if '~serialize' in spec:
+                    makefile.filter(
+                        'TARGET     :=.*', 'TARGET     := {0}'.format(
+                            'cosmo-ghg_' +
+                            spec.variants['cosmo_target'].value))
+                else:
+                    makefile.filter('TARGET     :=.*',
+                                    'TARGET     := {0}'.format('cosmo-ghg'))
             else:
-                makefile.filter('TARGET     :=.*',
-                                'TARGET     := {0}'.format('cosmo'))
+                if '~serialize' in spec:
+                    makefile.filter(
+                        'TARGET     :=.*', 'TARGET     := {0}'.format(
+                            'cosmo_' + spec.variants['cosmo_target'].value))
+                else:
+                    makefile.filter('TARGET     :=.*',
+                                    'TARGET     := {0}'.format('cosmo'))
 
             if 'cosmo_target=gpu' in self.spec:
                 cuda_version = self.spec['cuda'].version
@@ -414,7 +450,8 @@ class Cosmo(MakefilePackage):
                 OptionsFile.filter(
                     'PFLAGS   = -Mpreprocess.*',
                     'PFLAGS   = -Mpreprocess -DNO_MPI_HOST_DATA')
-            if 'cosmo_target=gpu' in self.spec and self.compiler.name == 'pgi':
+            if 'cosmo_target=gpu' in self.spec and self.compiler.name in (
+                    'pgi', 'nvhpc'):
                 OptionsFile.filter(
                     'PFLAGS   = -Mpreprocess.*',
                     'PFLAGS   = -Mpreprocess -DNO_ACC_FINALIZE')
@@ -423,12 +460,26 @@ class Cosmo(MakefilePackage):
 
         with working_dir(self.build_directory):
             mkdir(prefix.bin)
-            if '+serialize' in spec:
-                install('cosmo_serialize', prefix.bin)
+            if self.spec.version == Version('empa-ghg'):
+                if '+serialize' in spec:
+                    install('cosmo-ghg_serialize', prefix.bin)
+                else:
+                    install(
+                        'cosmo-ghg_' +
+                        self.spec.variants['cosmo_target'].value, prefix.bin)
+                    install(
+                        'cosmo-ghg_' +
+                        self.spec.variants['cosmo_target'].value,
+                        'test/testsuite')
             else:
-                install('cosmo_' + self.spec.variants['cosmo_target'].value,
+                if '+serialize' in spec:
+                    install('cosmo_serialize', prefix.bin)
+                else:
+                    install(
+                        'cosmo_' + self.spec.variants['cosmo_target'].value,
                         prefix.bin)
-                install('cosmo_' + self.spec.variants['cosmo_target'].value,
+                    install(
+                        'cosmo_' + self.spec.variants['cosmo_target'].value,
                         'test/testsuite')
 
     @run_after('install')

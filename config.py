@@ -66,6 +66,11 @@ def main():
         help=
         'Define spack caches (source and misc)  directories. Default:  ~/.spack/machine/source_cache and ~/.spack/machine/cache'
     )
+
+    parser.add_argument(
+        '--no_yaml_copy',
+        action='store_true',
+        help='Do not copy yaml-files from sysconfig to spack-instance')
     args = parser.parse_args()
 
     if not os.path.isdir(args.idir + '/spack'):
@@ -77,10 +82,11 @@ def main():
             branch=args.version,
             dest_dir=os.path.join(args.idir, 'spack'))
         subprocess.run(cmd.split(), check=True)
-        print('Installing custom dev-build command')
-        shutil.copy('./tools/spack-scripting/scripting/cmd/dev_build.py',
-                    args.idir + '/spack/lib/spack/spack/cmd/')
 
+    print('Installing custom dev-build command')
+    shutil.copy('./tools/spack-scripting/scripting/cmd/dev_build.py',
+                args.idir + '/spack/lib/spack/spack/cmd/')
+    print('Installing version_detection')
     shutil.copy('./tools/version_detection.py',
                 args.idir + '/spack/lib/spack/version_detection.py')
     sys.path.insert(1, os.path.join(args.idir, 'spack/lib/spack/external'))
@@ -175,10 +181,16 @@ def main():
 
     # copy modules.yaml, packages.yaml and compiles.yaml files in site scope of spack instance
     config_files = ["compilers.yaml", "modules.yaml", "packages.yaml"]
-    for afile in config_files:
-        cmd = 'cp ' + dir_path + '/sysconfigs/' + args.machine.replace(
-            'admin-', '') + '/' + afile + ' ' + args.idir + '/spack/etc/spack/'
-        subprocess.run(cmd.split(), check=True)
+    if args.no_yaml_copy:
+        print(
+            f'Warning: Do not copy config files: {config_files} to Spack instance!'
+        )
+    else:
+        for afile in config_files:
+            cmd = 'cp ' + dir_path + '/sysconfigs/' + args.machine.replace(
+                'admin-',
+                '') + '/' + afile + ' ' + args.idir + '/spack/etc/spack/'
+            subprocess.run(cmd.split(), check=True)
 
     print('Spack successfully installed. \nsource ' + args.idir +
           '/spack/share/spack/setup-env.sh for setting up the instance.')
