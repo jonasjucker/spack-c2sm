@@ -23,7 +23,7 @@ spack devbuildcosmo cosmo@dev-build # -t option for test, -c for clean build usu
 
 ```
 sjsjsjsjs
-* **Daint**
+* **Daint**ssssss
 
 ```bash
 module load cray-python
