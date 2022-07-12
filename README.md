@@ -15,7 +15,7 @@ More about spack in general : [Official Spack documentation](https://spack.readt
 
 ```bash
 module load python/3.7.4
-source /project/g110/spack/user/tsa/spack/share/spack/setup-env.sh # Source spack instance
+source /project/geeee110/spack/user/tsa/spack/share/spack/setup-env.sh # Source spack instance
 spack info cosmo # Check available options 
 spack spec cosmo # Check if your spec is precised enough, else precise more options
 cd <cosmo_base_dir> # cosmo, not cosmo/cosmo
