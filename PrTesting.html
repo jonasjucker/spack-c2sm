@@ -3,10 +3,11 @@
 <!DOCTYPE html>
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; C2SM Spack  documentation</title>
+  <title>PR testing &mdash; C2SM Spack  documentation</title>
   
 
   
@@ -27,8 +28,9 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.min.css" type="text/css" />
-    <link rel="index" title="Index" href="#" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Why was spack chosen by MeteoSwiss?" href="SpackChoice.html" /> 
 
 </head>
 
@@ -67,12 +69,14 @@
     
       <li><a href="index.html">Docs</a></li>
         
-      <li>Index</li>
+      <li>PR testing</li>
     
     
       <li class="breadcrumbs-aside">
         
             
+            <a href="_sources/PrTesting.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -101,7 +105,7 @@
                             
                             
                                 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="QuickStart.html">Quick Start for Spack</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="QuickStart.html#source-spack-instance-on-piz-daint">Source Spack instance on Piz Daint</a></li>
 <li class="toctree-l2"><a class="reference internal" href="QuickStart.html#source-spack-instance-on-tsa">Source Spack instance on Tsa</a></li>
@@ -165,10 +169,10 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="CI.html">Using the Jenkins Continuous Integration Executables [outdated]</a></li>
 <li class="toctree-l1"><a class="reference internal" href="SpackChoice.html">Why was spack chosen by MeteoSwiss?</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PrTesting.html">PR testing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="PrTesting.html#what-is-tested">What is tested</a></li>
-<li class="toctree-l2"><a class="reference internal" href="PrTesting.html#examples">Examples:</a></li>
-<li class="toctree-l2"><a class="reference internal" href="PrTesting.html#supported-commands">Supported commands</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PR testing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-tested">What is tested</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#examples">Examples:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#supported-commands">Supported commands</a></li>
 </ul>
 </li>
 </ul>
@@ -181,12 +185,78 @@
                     <div class="document">
                         
                             
-
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- 
-</div>
+  <section id="pr-testing">
+<h1>PR testing<a class="headerlink" href="#pr-testing" title="Permalink to this heading">¶</a></h1>
+<p>To test a PR create a comment <code class="docutils literal notranslate"><span class="pre">launch</span> <span class="pre">jenkins</span> <span class="pre">[--upstream]</span> <span class="pre">[--exclusive]</span> <span class="pre">[--tsa]</span> <span class="pre">[--daint]</span> <span class="pre">...</span></code>
+with either
+* a space separated list of predefined commands (see “supported commands”)
+or
+* a raw spack command</p>
+<p><code class="docutils literal notranslate"><span class="pre">--upstream</span></code> links the instance with the upstream spack-admin instance.
+<code class="docutils literal notranslate"><span class="pre">--exclusive</span></code> invokes only tests from the listed commands.
+<code class="docutils literal notranslate"><span class="pre">--tsa</span></code> runs tests only on Tsa.
+<code class="docutils literal notranslate"><span class="pre">--daint</span></code> runs tests only on Piz Daint.</p>
+<section id="what-is-tested">
+<h2>What is tested<a class="headerlink" href="#what-is-tested" title="Permalink to this heading">¶</a></h2>
+<p>Using predefined commands will trigger a set of packages, plus (if <code class="docutils literal notranslate"><span class="pre">--exclusive</span></code> is not set) all packages that depend on them. (See test_spack.py)</p>
+</section>
+<section id="examples">
+<h2>Examples:<a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">launch</span> <span class="pre">jenkins</span> <span class="pre">atlas</span> <span class="pre">cuda</span> <span class="pre">zlib_ng</span></code>
+No upstream will be used.
+All tests from atlas, cuda and zlib_ng will be run, plus all tests from all packages that depend on them.</p>
+<p><code class="docutils literal notranslate"><span class="pre">launch</span> <span class="pre">jenkins</span> <span class="pre">--upstream</span> <span class="pre">all</span></code>
+Upstream will be used.
+All packages and all use cases will be tested.</p>
+<p><code class="docutils literal notranslate"><span class="pre">launch</span> <span class="pre">jenkins</span> <span class="pre">spack</span> <span class="pre">installcosmo</span> <span class="pre">cosmo&#64;master%pgi</span> <span class="pre">cosmo_target=gpu</span> <span class="pre">+cppdycore</span></code>
+No upstream will be used.
+<code class="docutils literal notranslate"><span class="pre">spack</span> <span class="pre">installcosmo</span> <span class="pre">cosmo&#64;master%pgi</span> <span class="pre">cosmo_target=gpu</span> <span class="pre">+cppdycore</span></code> will be executed on all machines.</p>
+<p><code class="docutils literal notranslate"><span class="pre">launch</span> <span class="pre">jenkins</span> <span class="pre">--exclusive</span> <span class="pre">cosmo-dycore</span></code>
+No upstream will be used.
+Only the tests of cosmo-dycore will be run.</p>
+</section>
+<section id="supported-commands">
+<h2>Supported commands<a class="headerlink" href="#supported-commands" title="Permalink to this heading">¶</a></h2>
+<p>Others:</p>
+<ul class="simple">
+<li><p>all (tests all use cases)</p></li>
+<li><p>a raw spack command</p></li>
+</ul>
+<p>Package-name based:</p>
+<ul class="simple">
+<li><p>atlas</p></li>
+<li><p>atlas_utilities</p></li>
+<li><p>claw</p></li>
+<li><p>cosmo</p></li>
+<li><p>cosmo-dycore</p></li>
+<li><p>cosmo-eccodes-definitions</p></li>
+<li><p>cosmogrib-api</p></li>
+<li><p>cosmo-grib-api-definitions</p></li>
+<li><p>cuda</p></li>
+<li><p>dawn</p></li>
+<li><p>dawn4py</p></li>
+<li><p>dusk</p></li>
+<li><p>dyicon_benchmarks</p></li>
+<li><p>ecbuild</p></li>
+<li><p>eccodes</p></li>
+<li><p>eckit</p></li>
+<li><p>gridtools</p></li>
+<li><p>icon</p></li>
+<li><p>icondusk-e2e</p></li>
+<li><p>icontools</p></li>
+<li><p>int2lm</p></li>
+<li><p>libgrib1</p></li>
+<li><p>mpich</p></li>
+<li><p>oasis</p></li>
+<li><p>omnicompiler</p></li>
+<li><p>omni-xmod-pool</p></li>
+<li><p>openmpi</p></li>
+<li><p>serialbox</p></li>
+<li><p>xcodeml-tools</p></li>
+<li><p>zlib_ng</p></li>
+</ul>
+</section>
+</section>
 
 
                         

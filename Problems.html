@@ -3,10 +3,11 @@
 <!DOCTYPE html>
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; C2SM Spack  documentation</title>
+  <title>Known Problems with Spack &mdash; C2SM Spack  documentation</title>
   
 
   
@@ -27,8 +28,10 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.min.css" type="text/css" />
-    <link rel="index" title="Index" href="#" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Code Development [MCH]" href="CodeDev.html" />
+    <link rel="prev" title="Important Spack Commands" href="SpackCommands.html" /> 
 
 </head>
 
@@ -67,12 +70,14 @@
     
       <li><a href="index.html">Docs</a></li>
         
-      <li>Index</li>
+      <li>Known Problems with Spack</li>
     
     
       <li class="breadcrumbs-aside">
         
             
+            <a href="_sources/Problems.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -101,7 +106,7 @@
                             
                             
                                 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="QuickStart.html">Quick Start for Spack</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="QuickStart.html#source-spack-instance-on-piz-daint">Source Spack instance on Piz Daint</a></li>
 <li class="toctree-l2"><a class="reference internal" href="QuickStart.html#source-spack-instance-on-tsa">Source Spack instance on Tsa</a></li>
@@ -141,17 +146,17 @@
 <li class="toctree-l2"><a class="reference internal" href="SpackCommands.html#spack-load">Spack load</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="Problems.html">Known Problems with Spack</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Problems.html#error-init-got-an-unexpected-keyword-argument-capture-output">Error: __init__() got an unexpected keyword argument ‘capture_output’</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Problems.html#error-initialization-hangs">Error: Initialization hangs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Problems.html#error-could-not-determine-host">Error: Could not determine host</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Problems.html#error-broken-cache">Error: Broken cache</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Problems.html#delete-entire-spack">Delete entire Spack</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Known Problems with Spack</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#error-init-got-an-unexpected-keyword-argument-capture-output">Error: __init__() got an unexpected keyword argument ‘capture_output’</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#error-initialization-hangs">Error: Initialization hangs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#error-could-not-determine-host">Error: Could not determine host</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#error-broken-cache">Error: Broken cache</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#delete-entire-spack">Delete entire Spack</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="Problems.html#known-problems-with-spack-icon">Known Problems with Spack &amp; ICON</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Problems.html#error-fetcherror-archive-was-empty-for-icon">Error: FetchError: Archive was empty for icon</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Problems.html#error-processerror-config-cscs-machine-target-compiler-no-such-file-or-directory">Error: ProcessError: ./config/cscs/&lt;machine&gt;.&lt;target&gt;.&lt;compiler&gt;: No such file or directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#known-problems-with-spack-icon">Known Problems with Spack &amp; ICON</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#error-fetcherror-archive-was-empty-for-icon">Error: FetchError: Archive was empty for icon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#error-processerror-config-cscs-machine-target-compiler-no-such-file-or-directory">Error: ProcessError: ./config/cscs/&lt;machine&gt;.&lt;target&gt;.&lt;compiler&gt;: No such file or directory</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="CodeDev.html">Code Development [MCH]</a><ul>
@@ -181,12 +186,99 @@
                     <div class="document">
                         
                             
-
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- 
+  <section id="known-problems-with-spack">
+<h1>Known Problems with Spack<a class="headerlink" href="#known-problems-with-spack" title="Permalink to this heading">¶</a></h1>
+<p>Known problems with Spack and how to resolve them.</p>
+<section id="error-init-got-an-unexpected-keyword-argument-capture-output">
+<h2>Error: __init__() got an unexpected keyword argument ‘capture_output’<a class="headerlink" href="#error-init-got-an-unexpected-keyword-argument-capture-output" title="Permalink to this heading">¶</a></h2>
+<p>Spack uses a Python version &lt; 3.6. To fix this issue start again with a <strong>clean shell</strong>
+and execute the following (code below is for Daint):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module load cray-python <span class="c1"># on daint</span>
+<span class="nb">source</span> <span class="nv">$SPACK_ROOT</span>/share/spack/setup-env.sh
+</pre></div>
 </div>
+</section>
+<section id="error-initialization-hangs">
+<h2>Error: Initialization hangs<a class="headerlink" href="#error-initialization-hangs" title="Permalink to this heading">¶</a></h2>
+<p>If <cite>source $SPACK_ROOT/share/spack/setup-env.sh</cite> hangs, clean your cache:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rm -rf ~/.spack/cray ~/.spack/cache
+</pre></div>
+</div>
+<p>Then try again.</p>
+</section>
+<section id="error-could-not-determine-host">
+<h2>Error: Could not determine host<a class="headerlink" href="#error-could-not-determine-host" title="Permalink to this heading">¶</a></h2>
+<p>In case you have anything printing the hostname to the terminal in your .bashrc like</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span> <span class="k">$(</span>hostname<span class="k">)</span>
+</pre></div>
+</div>
+<p>the setup-env.sh script for Spack does not work.
+A possible workaround is to direct the “echo” to the stderr:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span> <span class="k">$(</span>hostname<span class="k">)</span> &gt;<span class="p">&amp;</span><span class="m">2</span>
+</pre></div>
+</div>
+</section>
+<section id="error-broken-cache">
+<h2>Error: Broken cache<a class="headerlink" href="#error-broken-cache" title="Permalink to this heading">¶</a></h2>
+<p>(Happening when mixing spack installations and caches)</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">spack</span> <span class="pre">install</span> <span class="pre">&lt;package&gt;&#64;&lt;version&gt;%&lt;compiler&gt;</span></code> prints an error message like:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">==</span>&gt; Error: <span class="s1">&#39;str&#39;</span> object has no attribute <span class="s1">&#39;get&#39;</span>
+</pre></div>
+</div>
+<p>you should remove your spack user config scope which is containing the broken cache:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rm -rf ~/.spack
+</pre></div>
+</div>
+<p>Then try again.</p>
+</section>
+<section id="delete-entire-spack">
+<h2>Delete entire Spack<a class="headerlink" href="#delete-entire-spack" title="Permalink to this heading">¶</a></h2>
+<p>As a last option it sometimes helps to delete all directories used by Spack.
+These are:</p>
+<ul class="simple">
+<li><p>spack-install</p></li>
+<li><p>spack-stages</p></li>
+<li><p>modules</p></li>
+<li><p>cache</p></li>
+</ul>
+<p>It is important to completely whipe out the folders listed above using the following commands:</p>
+<p><strong>Beware you loose all your installed packages installed by Spack</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># delete spack-install folder</span>
+rm -rf your_path_to/spack-install
+
+<span class="c1"># delete spack-stages folder</span>
+rm -rf your_path_to/spack-stages
+
+<span class="c1"># delete modules folder</span>
+rm -rf your_path_to/modules
+
+<span class="c1"># delete cache folder</span>
+rm -rf ~/.spack/cache
+</pre></div>
+</div>
+</section>
+</section>
+<section id="known-problems-with-spack-icon">
+<h1>Known Problems with Spack &amp; ICON<a class="headerlink" href="#known-problems-with-spack-icon" title="Permalink to this heading">¶</a></h1>
+<section id="error-fetcherror-archive-was-empty-for-icon">
+<h2>Error: FetchError: Archive was empty for icon<a class="headerlink" href="#error-fetcherror-archive-was-empty-for-icon" title="Permalink to this heading">¶</a></h2>
+<p>Usually happens when trying to do an out-of-source build of ICON, inside of an <strong>empty</strong> directory.
+Spack unfortunately does not allow to build in a empty directory, you should therefore create a fake file:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>touch fake.file
+spack dev-build ...
+</pre></div>
+</div>
+</section>
+<section id="error-processerror-config-cscs-machine-target-compiler-no-such-file-or-directory">
+<h2>Error: ProcessError: ./config/cscs/&lt;machine&gt;.&lt;target&gt;.&lt;compiler&gt;: No such file or directory<a class="headerlink" href="#error-processerror-config-cscs-machine-target-compiler-no-such-file-or-directory" title="Permalink to this heading">¶</a></h2>
+<p>Usually happens when trying to do an out-of-source build of ICON. Either you are in a branch of icon, which indeed
+do not contrain &lt;machine&gt;.&lt;target&gt;.&lt;compiler&gt;, or you did give a wrong config_dir argument which should point to icon base directory.</p>
+<p>Check your config_dir argument and its given relative path again:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>spack dev-build -u build icon@dev-build%nvhpc <span class="nv">config_dir</span><span class="o">=</span>./.. <span class="nv">icon_target</span><span class="o">=</span>gpu
+</pre></div>
+</div>
+</section>
+</section>
 
 
                         

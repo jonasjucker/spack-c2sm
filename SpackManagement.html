@@ -3,10 +3,11 @@
 <!DOCTYPE html>
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; C2SM Spack  documentation</title>
+  <title>Spack Instance Management [admin] &mdash; C2SM Spack  documentation</title>
   
 
   
@@ -27,8 +28,10 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.min.css" type="text/css" />
-    <link rel="index" title="Index" href="#" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Using the Jenkins Continuous Integration Executables [outdated]" href="CI.html" />
+    <link rel="prev" title="Code Development [MCH]" href="CodeDev.html" /> 
 
 </head>
 
@@ -67,12 +70,14 @@
     
       <li><a href="index.html">Docs</a></li>
         
-      <li>Index</li>
+      <li>Spack Instance Management [admin]</li>
     
     
       <li class="breadcrumbs-aside">
         
             
+            <a href="_sources/SpackManagement.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -101,7 +106,7 @@
                             
                             
                                 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="QuickStart.html">Quick Start for Spack</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="QuickStart.html#source-spack-instance-on-piz-daint">Source Spack instance on Piz Daint</a></li>
 <li class="toctree-l2"><a class="reference internal" href="QuickStart.html#source-spack-instance-on-tsa">Source Spack instance on Tsa</a></li>
@@ -159,8 +164,8 @@
 <li class="toctree-l2"><a class="reference internal" href="CodeDev.html#cosmo-c-dycore">COSMO C++ Dycore</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="SpackManagement.html">Spack Instance Management [admin]</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="SpackManagement.html#how-to-re-create-the-spack-instance">How to re-create the spack instance</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Spack Instance Management [admin]</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-re-create-the-spack-instance">How to re-create the spack instance</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="CI.html">Using the Jenkins Continuous Integration Executables [outdated]</a></li>
@@ -181,12 +186,40 @@
                     <div class="document">
                         
                             
-
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- 
+  <section id="spack-instance-management-admin">
+<h1>Spack Instance Management [admin]<a class="headerlink" href="#spack-instance-management-admin" title="Permalink to this heading">¶</a></h1>
+<section id="how-to-re-create-the-spack-instance">
+<h2>How to re-create the spack instance<a class="headerlink" href="#how-to-re-create-the-spack-instance" title="Permalink to this heading">¶</a></h2>
+<p>First, you might want to delete the old spack instances if you want to refresh them.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rm -rf /project/g110/spack/user/admin-<span class="nv">$slave</span> /project/g110/spack/user/<span class="nv">$slave</span>
+</pre></div>
 </div>
+<p>If you want to recreate them from scratch, don’t forget to remove their associated installations directories (modules, stages &amp; installations)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rm -rf /project/g110/modules/admin-<span class="nv">$slave</span>/ /project/g110/spack-stages/<span class="nv">$slave</span> /project/g110/spack-install/<span class="nv">$slave</span>
+</pre></div>
+</div>
+<p>Once this is done, you can use the config.py of the spack-mch instance to create the two mch instances (admin for the official installation under /project/g110/spack-install, users installation under /scratch/$user/spack/spack-install)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/C2SM/spack-c2sm/
+<span class="nb">cd</span> spack-mch
+./config.py -m admin-<span class="nv">$slave</span> -i /project/g110/spack/user/admin-<span class="nv">$slave</span>
+./config.py -m <span class="nv">$slave</span> -i /project/g110/spack/user/<span class="nv">$slave</span>
+</pre></div>
+</div>
+<p>Finally install something with both instances to create a database file for the admin-instance respectively a junit-report file for the users instance, both files being needed to be able to source and install as a non-jenkins user. In order to do that first source the corresponding instances and then install something (Ex: the grib-api definitions).</p>
+<p>Admin instance:</p>
+<p>This instance is for the jenkins-user only. It installs to /project.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>. /project/g110/spack/user/admin-<span class="nv">$slave</span>/spack/share/spack/setup-env.sh
+spack install cosmo-grib-api-definition
+</pre></div>
+</div>
+<p>Users instance:</p>
+<p>This instance is for all users. It installs to $SCRATCH</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>. /project/g110/spack/user/admin-<span class="nv">$slave</span>/spack/share/spack/setup-env.sh
+spack install cosmo-grib-api-definition
+</pre></div>
+</div>
+</section>
+</section>
 
 
                         

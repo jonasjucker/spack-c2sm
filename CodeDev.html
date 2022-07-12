@@ -3,10 +3,11 @@
 <!DOCTYPE html>
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; C2SM Spack  documentation</title>
+  <title>Code Development [MCH] &mdash; C2SM Spack  documentation</title>
   
 
   
@@ -27,8 +28,10 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.min.css" type="text/css" />
-    <link rel="index" title="Index" href="#" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Spack Instance Management [admin]" href="SpackManagement.html" />
+    <link rel="prev" title="Known Problems with Spack" href="Problems.html" /> 
 
 </head>
 
@@ -67,12 +70,14 @@
     
       <li><a href="index.html">Docs</a></li>
         
-      <li>Index</li>
+      <li>Code Development [MCH]</li>
     
     
       <li class="breadcrumbs-aside">
         
             
+            <a href="_sources/CodeDev.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -101,7 +106,7 @@
                             
                             
                                 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="QuickStart.html">Quick Start for Spack</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="QuickStart.html#source-spack-instance-on-piz-daint">Source Spack instance on Piz Daint</a></li>
 <li class="toctree-l2"><a class="reference internal" href="QuickStart.html#source-spack-instance-on-tsa">Source Spack instance on Tsa</a></li>
@@ -154,9 +159,9 @@
 <li class="toctree-l2"><a class="reference internal" href="Problems.html#error-processerror-config-cscs-machine-target-compiler-no-such-file-or-directory">Error: ProcessError: ./config/cscs/&lt;machine&gt;.&lt;target&gt;.&lt;compiler&gt;: No such file or directory</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="CodeDev.html">Code Development [MCH]</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="CodeDev.html#cosmo">COSMO</a></li>
-<li class="toctree-l2"><a class="reference internal" href="CodeDev.html#cosmo-c-dycore">COSMO C++ Dycore</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Code Development [MCH]</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#cosmo">COSMO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cosmo-c-dycore">COSMO C++ Dycore</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="SpackManagement.html">Spack Instance Management [admin]</a><ul>
@@ -181,12 +186,93 @@
                     <div class="document">
                         
                             
+  <section id="code-development-mch">
+<h1>Code Development [MCH]<a class="headerlink" href="#code-development-mch" title="Permalink to this heading">¶</a></h1>
+<section id="cosmo">
+<h2>COSMO<a class="headerlink" href="#cosmo" title="Permalink to this heading">¶</a></h2>
+<section id="testing-cosmo-with-the-testsuite">
+<h3>Testing COSMO with the Testsuite<a class="headerlink" href="#testing-cosmo-with-the-testsuite" title="Permalink to this heading">¶</a></h3>
+<p>The following commands demonstrates how to launch the testsuite for a COSMO
+executable compiled using spack. Assuming the user starts from the root folder
+of cosmo.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># copy executable to the testsuite folder</span>
+cp -f cosmo/ACC/cosmo_gpu cosmo/test/testsuite <span class="c1"># cosmo_cpu for cpu</span>
 
-<h1 id="index">Index</h1>
+<span class="c1"># source the run environment</span>
+spack load <span class="nv">$COSMO_SPEC</span>
 
-<div class="genindex-jumpbox">
- 
+<span class="c1"># launch tests</span>
+
+./cosmo/ACC/test/tools/test_cosmo.py -s <span class="nv">$COSMO_SPEC</span> -b .
+</pre></div>
 </div>
+</section>
+<section id="serialized-unittest-data">
+<h3>Serialized unittest data<a class="headerlink" href="#serialized-unittest-data" title="Permalink to this heading">¶</a></h3>
+<p>In order to run test the C++ dycore, the regression tests require a set of serialized data files from COSMO.
+Jenkins runs periodically the serialization (<a class="reference external" href="https://jenkins-mch.cscs.ch/job/cosmo_serialize/">https://jenkins-mch.cscs.ch/job/cosmo_serialize/</a>), which installs all the serialized data set corresponding to the latest master in the g110 project space. In order to find the location of the jenkins serialized data follow the steps described in <a class="reference internal" href="#locate-jenkins-serialized-data"><span class="std std-ref">Locate jenkins serialized data</span></a>.</p>
+<p>In a different development situation where you are modifying the FORTRAN COSMO dycore, the master serialized data by jenkins will not be compatible with your modifications.
+In that case you need to serialize your own data (see <a class="reference internal" href="#serialize-your-own-data"><span class="std std-ref">Serialize your own data</span></a>).</p>
+<section id="locate-jenkins-serialized-data">
+<h4>Locate jenkins serialized data<a class="headerlink" href="#locate-jenkins-serialized-data" title="Permalink to this heading">¶</a></h4>
+<p>This section describes how to find the location of the serialized data by jenkins for the master version of COSMO.</p>
+<p>Set the spack spec of COSMO for serialization mode:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@dev-build%pgi real_type=float cosmo_target=cpu +serialize ~cppdycore&quot;</span>
+</pre></div>
+</div>
+<p>Find the spack install location of the serialized data</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">SERIALIZE_DATA</span><span class="o">=</span><span class="k">$(</span>spack location -i <span class="si">${</span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="si">}</span><span class="k">)</span>/data
+</pre></div>
+</div>
+</section>
+<section id="serialize-your-own-data">
+<h4>Serialize your own data<a class="headerlink" href="#serialize-your-own-data" title="Permalink to this heading">¶</a></h4>
+<p>Set the spack spec (for dev-build version) of COSMO for serialization mode:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo@dev-build%pgi real_type=float cosmo_target=cpu +serialize ~cppdycore&quot;</span>
+</pre></div>
+</div>
+<p>In your working directory of cosmo, build a spack COSMO executable for serialization</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;
+spack dev-build --until<span class="o">=</span>build <span class="si">${</span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="si">}</span>
+</pre></div>
+</div>
+<p>Load the correct run environment</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>spack load <span class="si">${</span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="si">}</span>
+</pre></div>
+</div>
+<p>Launch the serialization script</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./cosmo/ACC/test/tools/serialize_cosmo.py -s <span class="si">${</span><span class="nv">COSMO_SERIALIZE_SPEC</span><span class="si">}</span> -b .
+</pre></div>
+</div>
+<p>Set the path to the serialized data (later it will be used in this guide)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">SERIALIZE_DATA</span><span class="o">=</span>&lt;/path/to/cosmo&gt;/cosmo/ACC/test/serialize/data/
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="cosmo-c-dycore">
+<h2>COSMO C++ Dycore<a class="headerlink" href="#cosmo-c-dycore" title="Permalink to this heading">¶</a></h2>
+<p>This section describes how to compile and test a version of the COSMO C++ dycore from your working directory.</p>
+<p>Set a COSMO C++ dycore spec</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">DYCORE_SPEC</span><span class="o">=</span><span class="s2">&quot;cosmo-dycore@dev-build real_type=float build_type=Release&quot;</span>
+</pre></div>
+</div>
+<p>In your working directory of cosmo, build a C++ dycore executable</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;/path/to/cosmo&gt;
+spack dev-build --until<span class="o">=</span>build cosmo-dycore@dev-build <span class="nv">real_type</span><span class="o">=</span>float <span class="nv">build_type</span><span class="o">=</span>Release +cuda
+</pre></div>
+</div>
+<p>Load the correct run environment</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>spack load <span class="si">${</span><span class="nv">DYCORE_SPEC</span><span class="si">}</span>
+</pre></div>
+</div>
+<p>Launch the dycore test script</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./dycore/test/tools/test_dycore.py -s <span class="si">${</span><span class="nv">DYCORE_SPEC</span><span class="si">}</span> -b spack-build -d <span class="si">${</span><span class="nv">SERIALIZE_DATA</span><span class="si">}</span>
+</pre></div>
+</div>
+</section>
+</section>
 
 
                         
