@@ -1,18 +1,20 @@
-name: Merge latest Dom config
+name: Pull Request Action
 on:
   push:
     branches:
       - test
 jobs:
-  merge-branch:
+  create-pull-request:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: everlytic/branch-merge@1.1.2
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: pull-request
+        uses: repo-sync/pull-request@v2
         with:
-          github_token: ${{ github.token }}
-          source_ref: ${{ github.ref }}
-          target_branch: 'master'
-          commit_message_template: '[Automated] Merged {source_ref} into target {target_branch}'
+          destination_branch: "master"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_label: "Automatic PR"
+          pr_title: "[Dom] Update config: Tests run for COSMO, ICON, Icontools and Int2lm"
 
 
